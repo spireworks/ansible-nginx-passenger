@@ -1,0 +1,70 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+  vars:
+    # =======================================================
+    # rvm and ruby
+    # =======================================================
+    rvm1_rubies:
+      - 'ruby-2.3.0'
+    rvm1_install_flags: '--auto-dotfiles --user-install'
+    rvm1_user: '{{ ansible_ssh_user }}'
+    rvm1_install_path: '/home/{{ ansible_ssh_user }}/.rvm'
+    rvm1_rvm_check_for_updates: false
+
+  roles:
+    - rvm_io.rvm1-ruby
+    - ../../ansible-nginx-passenger
+
+  tasks:
+    - name: test - uncomment passenger_root config from nginx.conf
+      lineinfile:
+        dest: /etc/nginx/nginx.conf
+        regexp: 'passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;'
+        line: "\tpassenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;"
+      notify: nginx restart
+    
+    - name: test - uncomment passenger_ruby config from nginx.conf
+      lineinfile:
+        dest: /etc/nginx/nginx.conf
+        regexp: 'passenger_ruby /usr/bin/passenger_free_ruby;'
+        line: "\tpassenger_ruby /usr/bin/passenger_free_ruby;"
+      notify: nginx restart
+
+    - file: path=/home/{{ ansible_ssh_user }}/demo
+            state=directory
+            owner={{ ansible_ssh_user }}
+            group={{ ansible_ssh_user }}
+            mode=0755
+    - file: path=/home/{{ ansible_ssh_user }}/demo/public
+            state=directory
+            owner={{ ansible_ssh_user }}
+            group={{ ansible_ssh_user }}
+            mode=0755
+    - copy: src=files/demo/config.ru
+            dest=/home/{{ ansible_ssh_user }}/demo/config.ru
+            owner={{ ansible_ssh_user }}
+            group={{ ansible_ssh_user }}
+            mode=0644
+    - copy: src=files/demo/app.rb
+            dest=/home/{{ ansible_ssh_user }}/demo/app.rb
+            owner={{ ansible_ssh_user }}
+            group={{ ansible_ssh_user }}
+            mode=0644
+    - copy: src=files/nginx/default
+            dest=/etc/nginx/sites-available/default
+            mode=0644
+
+    - command: "{{ rvm1_install_path }}/wrappers/ruby-2.3.0/gem install sinatra"
+      become: true
+      become_user: "{{ ansible_ssh_user }}"
+      notify: nginx restart
+
+    - uri:
+        url: http://localhost
+        method: GET
+        status_code: 200
+        content: 'Hello World'
+        content_type: 'text/html;charset=utf-8'
+        return_content: true

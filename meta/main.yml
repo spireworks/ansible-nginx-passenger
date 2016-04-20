@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Spireworks Team
+  description: Install nginx, passenger and the nginx service.
+  company: Spireworks
+  issue_tracker_url: https://github.com/spireworks/ansible-nginx-passenger/issues
+  license: MIT
+  min_ansible_version: 1.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - nginx
+    - passenger
+    - service
+    - web
+    - webserver
+    - rails
+
+dependencies: []
