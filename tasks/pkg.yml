@@ -1,0 +1,7 @@
+---
+- name: pkg - install nginx passenger packages
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - nginx-extras
+    - passenger
+  notify: nginx restart

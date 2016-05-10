@@ -1,0 +1,8 @@
+server {
+       listen 80 default_server;
+       listen [::]:80 default_server;
+       root /home/vagrant/demo/public;
+       passenger_ruby /home/vagrant/.rvm/wrappers/ruby-2.3.0/ruby;
+       passenger_enabled on;
+       server_name _;
+}
