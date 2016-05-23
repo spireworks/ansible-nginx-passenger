@@ -1,3 +1,6 @@
 ---
+- name: copy nginx service file
+  copy: src=nginx dest=/etc/init.d/nginx mode=755
+
 - name: service - ensure nginx is running
   service: name=nginx state=started enabled=yes
